@@ -24,7 +24,6 @@ export const metadata: Metadata = {
   description:
     "Inversify is Sri Lanka's premier web development and e-commerce agency. We build cutting-edge websites, online stores, custom software, and digital solutions that drive business growth. Expert web design, SEO, and digital marketing services in Colombo & worldwide.",
   keywords: [
-    // Primary Keywords - Sri Lanka Focus
     "web development sri lanka",
     "website design sri lanka",
     "e-commerce development sri lanka",
@@ -32,7 +31,6 @@ export const metadata: Metadata = {
     "website development colombo",
     "online store development sri lanka",
     "custom software development sri lanka",
-    // Service-Based Keywords
     "ecommerce website design",
     "responsive web design",
     "mobile app development",
@@ -41,27 +39,23 @@ export const metadata: Metadata = {
     "wordpress development sri lanka",
     "react development",
     "nextjs development",
-    // Business Keywords
     "digital agency sri lanka",
     "web development company colombo",
     "best web designers sri lanka",
     "professional website design",
     "business website development",
     "corporate website design",
-    // Solution Keywords
     "SEO services sri lanka",
     "digital marketing sri lanka",
     "UI UX design sri lanka",
     "website maintenance sri lanka",
     "web hosting sri lanka",
     "domain registration sri lanka",
-    // Technology Keywords
     "GSAP animations",
     "framer motion",
     "three.js development",
     "progressive web apps",
     "headless cms",
-    // Location-Based
     "web developer in sri lanka",
     "freelance web developer sri lanka",
     "affordable web design sri lanka",
@@ -80,21 +74,6 @@ export const metadata: Metadata = {
   category: "Web Development",
   classification: "Business",
 
-  // ─── FAVICONS ─────────────────────────────────────────────────────────────
-  //
-  //  Your /public folder must look like this before deploying:
-  //
-  //  /public/
-  //  ├── favicon.ico                              ← MOVE from favicons folder to here
-  //  ├── site.webmanifest                         ← already here ✅
-  //  └── favicons/
-  //      ├── apple-touch-icon.png                 ← rename "apple-icon"
-  //      ├── favicon-32x32.png                    ← rename "icon1"
-  //      ├── favicon-16x16.png                    ← rename "icon0"
-  //      ├── web-app-manifest-192x192.png         ← already correct ✅
-  //      └── web-app-manifest-512x512.png         ← already correct ✅
-  //      (DELETE manifest.json from here)
-  //
   icons: {
     icon: [
       { url: "/favicon.ico" },
@@ -107,10 +86,10 @@ export const metadata: Metadata = {
     ],
   },
 
-  manifest: "/site.webmanifest",
+  // ✅ REMOVED: manifest link — this is what triggers the "Install App" banner.
+  // Browsers see a valid manifest + icons and automatically show the PWA install prompt.
+  // manifest: "/site.webmanifest",
 
-  // ─── OPEN GRAPH ───────────────────────────────────────────────────────────
-  // hero.webp exists in your /public/images/ folder ✅
   openGraph: {
     type: "website",
     locale: "en_US",
@@ -165,19 +144,20 @@ export const metadata: Metadata = {
     },
   },
 
-  // Your real Google Search Console verification code ✅
   verification: {
     google: "fidDS514qDaRbLnSuEYq_V9Ch72Yt5kn4ExozxhX5h4",
   },
 
   other: {
-    "mobile-web-app-capable": "yes",
-    "apple-mobile-web-app-capable": "yes",
-    "apple-mobile-web-app-status-bar-style": "black-translucent",
+    // ✅ REMOVED: "mobile-web-app-capable" and "apple-mobile-web-app-capable"
+    // These two meta tags are the second trigger for the install banner on Android & iOS.
+    // Removing them tells browsers this is a regular website, not an installable PWA.
+    // "mobile-web-app-capable": "yes",       ← REMOVED
+    // "apple-mobile-web-app-capable": "yes", ← REMOVED
+    // "apple-mobile-web-app-status-bar-style": "black-translucent", ← REMOVED (only applies to installed PWAs)
     "apple-mobile-web-app-title": "Inversify",
     "application-name": "Inversify",
     "msapplication-TileColor": "#000000",
-    // ✅ FIXED: was "/favicon.ico/web-app-manifest-192x192.png" (wrong — .ico is a file not a folder)
     "msapplication-TileImage": "/favicon.ico/web-app-manifest-192x192.png",
     "theme-color": "#000000",
   },
@@ -203,17 +183,14 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable} suppressHydrationWarning>
       <head>
-        {/* Performance: preconnect to external domains */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
         <link rel="dns-prefetch" href="https://www.google-analytics.com" />
 
-        {/* Geo-targeting for SEO */}
         <meta name="geo.region" content="LK" />
         <meta name="geo.placename" content="Colombo" />
 
-        {/* Additional SEO meta */}
         <meta name="revisit-after" content="7 days" />
         <meta name="distribution" content="global" />
         <meta name="rating" content="general" />
@@ -234,8 +211,6 @@ export default function RootLayout({
               url: "https://inversify.lk",
               logo: {
                 "@type": "ImageObject",
-                // ✅ FIXED: was "/favicon.ico/web-app-manifest-512x512.png" — .ico is a FILE not a folder!
-                // This is what Google shows as your brand logo next to search results
                 url: "https://inversify.lk/favicon.ico/web-app-manifest-512x512.png",
                 width: 512,
                 height: 512,
@@ -254,12 +229,7 @@ export default function RootLayout({
                 { "@type": "Country", name: "Sri Lanka" },
                 { "@type": "Place", name: "Worldwide" },
               ],
-              sameAs: [
-                // "https://www.facebook.com/inversify",
-                // "https://twitter.com/inversify",
-                // "https://www.linkedin.com/company/inversify",
-                // "https://www.instagram.com/inversify",
-              ],
+              sameAs: [],
               priceRange: "$$",
               aggregateRating: {
                 "@type": "AggregateRating",
@@ -283,7 +253,6 @@ export default function RootLayout({
               url: "https://inversify.lk",
               telephone: "+94704621228",
               email: "hello.inversify@gmail.com",
-              // priceRange: "$$",
               address: {
                 "@type": "PostalAddress",
                 streetAddress: "",
@@ -292,19 +261,13 @@ export default function RootLayout({
                 postalCode: "",
                 addressCountry: "LK",
               },
-
               openingHoursSpecification: {
                 "@type": "OpeningHoursSpecification",
                 dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
                 opens: "09:00",
                 closes: "18:00",
               },
-              sameAs: [
-                // "https://www.facebook.com/inversify",
-                // "https://twitter.com/inversify",
-                // "https://www.linkedin.com/company/inversify",
-                // "https://www.instagram.com/inversify",
-              ],
+              sameAs: [],
             }),
           }}
         />
@@ -406,7 +369,6 @@ export default function RootLayout({
           }}
         />
 
-        {/* Set dark theme immediately — prevents white flash on load */}
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(){document.documentElement.setAttribute('data-theme','dark');})();`,
