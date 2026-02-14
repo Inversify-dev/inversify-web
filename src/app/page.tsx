@@ -10,7 +10,6 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 // ─── MODULE-LEVEL CONSTANTS ───────────────────────────────────────────────────
-// Cached once at load time; never triggers re-render
 const IS_MOBILE_UA =
   typeof navigator !== 'undefined' &&
   /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
@@ -20,10 +19,8 @@ const MOBILE_BREAKPOINT = 768;
 // Register GSAP plugin once at module scope (safe for SSR)
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
-
-  // Global GSAP perf settings applied once
-  gsap.ticker.lagSmoothing(0);           // Eliminate lag compensation jitter
-  gsap.config({ force3D: true });        // Always promote to GPU layer
+  gsap.ticker.lagSmoothing(0);
+  gsap.config({ force3D: true });
   ScrollTrigger.config({
     ignoreMobileResize: true,
     autoRefreshEvents: 'visibilitychange,DOMContentLoaded,load',
@@ -40,7 +37,6 @@ const SHARED_STYLES = `
   }
   html {
     overscroll-behavior: none;
-    -webkit-overflow-scrolling: touch;
     text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;
   }
@@ -49,7 +45,6 @@ const SHARED_STYLES = `
     margin: 0;
     background: #000;
     overscroll-behavior: none;
-    -webkit-overflow-scrolling: touch;
     touch-action: pan-y;
   }
   ::-webkit-scrollbar { width: 0; }
@@ -59,7 +54,6 @@ const SHARED_STYLES = `
 const DESKTOP_STYLES = `
   html { scroll-behavior: auto; }
 
-  /* GPU layers for animated elements */
   #hero-black-overlay,
   #who-we-are-portal-content,
   #what-we-do-portal-content,
@@ -72,13 +66,11 @@ const DESKTOP_STYLES = `
     -webkit-backface-visibility: hidden;
   }
 
-  /* Stacking isolation per section */
-  #hero                    { contain: layout style paint; }
-  #who-we-are              { contain: layout style paint; }
-  #zoom-portal-trigger     { contain: layout style; }
+  #hero                     { contain: layout style paint; }
+  #who-we-are               { contain: layout style paint; }
+  #zoom-portal-trigger      { contain: layout style; }
   #morph-transition-trigger { contain: layout style; }
 
-  /* iOS tap-to-scroll hack */
   @supports (-webkit-touch-callout: none) {
     body { cursor: pointer; }
   }
@@ -87,12 +79,10 @@ const DESKTOP_STYLES = `
 const MOBILE_STYLES = `
   html { scroll-behavior: smooth; }
 
-  /* Defer paint of off-screen sections */
   .mobile-section {
     content-visibility: auto;
     contain-intrinsic-size: auto 100vh;
   }
-  /* First two sections always rendered */
   .mobile-section:nth-child(1),
   .mobile-section:nth-child(2) {
     content-visibility: visible;
@@ -102,12 +92,15 @@ const MOBILE_STYLES = `
 // ─── COMPONENT ────────────────────────────────────────────────────────────────
 export default function Home() {
   const [isReady, setIsReady] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+
+  // ✅ FIX: Pre-seed mobile state from UA so we never flash the desktop layout
+  // on mobile, and never briefly run GSAP/Lenis on a phone.
+  const [isMobile, setIsMobile] = useState<boolean>(IS_MOBILE_UA);
   const mainRef = useRef<HTMLDivElement>(null);
 
-  // ── Mobile detection with debounce ─────────────────────────────────────────
+  // ── Mobile detection ────────────────────────────────────────────────────────
   const checkMobile = useCallback(() => {
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT || IS_MOBILE_UA);
   }, []);
 
   useEffect(() => {
@@ -129,38 +122,29 @@ export default function Home() {
     };
   }, [checkMobile]);
 
-  // ── Scroll optimizations ───────────────────────────────────────────────────
+  // ── Scroll body styles ──────────────────────────────────────────────────────
+  // ✅ FIX: Removed ScrollTrigger.normalizeScroll() entirely.
+  // It directly conflicts with Lenis smooth scroll — using both causes
+  // double normalization that breaks scrolling on many devices.
+  // Lenis (desktop-only in SmoothScrollProvider) handles normalization.
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // Apply once; native browser handles the rest
     document.documentElement.style.scrollBehavior = isMobile ? 'smooth' : 'auto';
     document.body.style.overscrollBehavior = 'none';
     document.body.style.touchAction = 'pan-y';
 
-    if (IS_MOBILE_UA) {
-      (document.body.style as CSSStyleDeclaration & Record<string, string>)
-        .webkitOverflowScrolling = 'touch';
-    }
-
-    if (!isMobile) {
-      ScrollTrigger.normalizeScroll({
-        allowNestedScroll: true,
-        lockAxis: false,
-        type: 'touch,wheel,pointer',
-      });
-    }
-
     return () => {
-      if (!isMobile) ScrollTrigger.normalizeScroll(false);
       document.body.style.overscrollBehavior = '';
       document.body.style.touchAction = '';
     };
   }, [isMobile]);
 
   // ── GSAP animations — desktop only ────────────────────────────────────────
+  // ✅ FIX: Added IS_MOBILE_UA guard so GSAP never initialises on a phone,
+  // even during the brief window before isMobile state updates.
   useEffect(() => {
-    if (!isReady || !mainRef.current || isMobile) return;
+    if (!isReady || !mainRef.current || isMobile || IS_MOBILE_UA) return;
 
     const ctx = gsap.context(() => {
       ScrollTrigger.clearScrollMemory('manual');
@@ -246,7 +230,6 @@ export default function Home() {
         .to('#morph-blob', { opacity: 0, duration: 0.4 }, 1.1);
 
       // ── 4) GENERAL REVEALS ────────────────────────────────────────────────
-      // Batch for one layout read
       const fadeEls = gsap.utils.toArray<Element>('.fade-in-up');
       if (fadeEls.length) {
         gsap.set(fadeEls, { y: 50, opacity: 0 });
@@ -266,7 +249,6 @@ export default function Home() {
         });
       }
 
-      // Defer refresh to after paint
       requestAnimationFrame(() => {
         requestAnimationFrame(() => ScrollTrigger.refresh());
       });
@@ -316,7 +298,6 @@ export default function Home() {
         style={{
           overflowX: 'hidden',
           overflowY: 'auto',
-          WebkitOverflowScrolling: 'touch',
           touchAction: 'pan-y',
         }}
       >

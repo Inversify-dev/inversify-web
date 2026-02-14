@@ -2,38 +2,41 @@
 
 import { useEffect, useState } from "react";
 
+const IS_MOBILE_UA =
+  typeof navigator !== "undefined" &&
+  /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+const MOBILE_BREAKPOINT = 768;
+
 export const useMobileDetection = () => {
-  const [isMobile, setIsMobile] = useState(false);
+  // ✅ Pre-seed from UA so there's no flash from false → true on phones
+  const [isMobile, setIsMobile] = useState<boolean>(IS_MOBILE_UA);
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
-    
+
     const checkMobile = () => {
-      const mobile = window.innerWidth < 768 || 
-                    ('ontouchstart' in window && window.innerWidth < 1024) ||
-                    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      setIsMobile(mobile);
+      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT || IS_MOBILE_UA);
     };
-    
+
     checkMobile();
-    
-    // Debounced resize handler
-    let resizeTimeout: NodeJS.Timeout;
+
+    let rafId: number;
     const handleResize = () => {
-      clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(checkMobile, 100);
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(checkMobile);
     };
-    
-    window.addEventListener('resize', handleResize);
-    
+
+    window.addEventListener("resize", handleResize, { passive: true });
+
     return () => {
-      clearTimeout(resizeTimeout);
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener("resize", handleResize);
+      cancelAnimationFrame(rafId);
     };
   }, []);
 
   return { isMobile, isMounted };
 };
 
-export const isClient = typeof window !== 'undefined';
+export const isClient = typeof window !== "undefined";

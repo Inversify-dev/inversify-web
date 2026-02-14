@@ -37,6 +37,12 @@ const SECTIONS = [
     description:
       'A complete identity system crafted to feel premium, memorable, and built for long-term growth and recognition.',
   },
+  {
+    title: 'Creative',
+    subtitle: 'Design',
+    description:
+      'Strategic brand architecture designed for recognition and consistency.',
+  },
 ] as const;
 
 // Target rotations per section — outside component, never re-allocated

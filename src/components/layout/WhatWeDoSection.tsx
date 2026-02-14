@@ -95,11 +95,11 @@ const SERVICES = [
     description: 'Conversion-driven stores with scalable infrastructure and seamless checkout logic.',
   },
   {
-    title: 'CREATIVE',
-    description: 'Purposeful visual storytelling — built to support the system, not distract from it.',
+    title: 'CREATIVE DESIGN',
+    description: 'Purposeful visual storytelling - built to support the system, not distract from it.',
   },
   {
-    title: 'IDENTITY',
+    title: 'BRAND IDENTITY',
     description: 'Strategic brand architecture designed for recognition and consistency.',
   },
   {

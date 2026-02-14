@@ -249,13 +249,13 @@ export default function ContactPage() {
               make your brand unstoppable.
             </p>
 
-            <button
+            {/* <button
               onClick={scrollToForm}
               className="mt-10 inline-flex items-center gap-3 px-8 py-4 rounded-full border border-white/15 bg-white/5 backdrop-blur-xl text-xs uppercase tracking-[0.35em] font-black text-gray-200 hover:text-white hover:border-white/30 hover:bg-white/10 transition-all"
             >
               Contact Us
               <Send size={16} />
-            </button>
+            </button> */}
           </motion.div>
         </div>
 
@@ -343,7 +343,7 @@ export default function ContactPage() {
           </h2>
 
           <p className="mt-4 text-gray-300 text-base sm:text-lg max-w-2xl leading-relaxed">
-            Have an idea brewing? We're all ears. Share your vision with us and we'll respond within <span className="text-white font-semibold">2 hours</span> — no automated replies, just real conversations. Book a free 30-min strategy call or just say hi.
+            Have an idea brewing? We're all ears. Share your vision with us and we'll respond - no automated replies, just real conversations. Book a free 30-min strategy call or just say hi.
           </p>
 
           <form onSubmit={handleSubmit} className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -462,7 +462,7 @@ export default function ContactPage() {
                         Message Delivered!
                       </h4>
                       <p className="text-gray-300 text-sm leading-relaxed">
-                        Your message just landed in our inbox. We're on it and will get back to you within <span className="text-white font-semibold">2 hours</span> (usually faster). Check your email - we'll be in touch soon!
+                        Your message just landed in our inbox. We're on it and will get back to you. Check your email - we'll be in touch soon!
                       </p>
                     </div>
                   </div>
