@@ -9,12 +9,19 @@ import CTASection from '@/components/layout/CTASection';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-// ─── MODULE-LEVEL CONSTANTS ───────────────────────────────────────────────────
-const IS_MOBILE_UA =
-  typeof navigator !== 'undefined' &&
-  /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-const MOBILE_BREAKPOINT = 768;
+// ─── MOBILE DETECTION ─────────────────────────────────────────────────────────
+const detectMobile = () => {
+  if (typeof window === 'undefined') return false;
+  
+  return (
+    window.innerWidth < 1024 ||
+    'ontouchstart' in window ||
+    navigator.maxTouchPoints > 0 ||
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    )
+  );
+};
 
 // Register GSAP plugin once at module scope (safe for SSR)
 if (typeof window !== 'undefined') {
@@ -45,7 +52,6 @@ const SHARED_STYLES = `
     margin: 0;
     background: #000;
     overscroll-behavior: none;
-    touch-action: pan-y;
   }
   ::-webkit-scrollbar { width: 0; }
   ::-webkit-scrollbar-track { display: none; }
@@ -53,6 +59,7 @@ const SHARED_STYLES = `
 
 const DESKTOP_STYLES = `
   html { scroll-behavior: auto; }
+  body { touch-action: pan-y; }
 
   #hero-black-overlay,
   #who-we-are-portal-content,
@@ -77,11 +84,21 @@ const DESKTOP_STYLES = `
 `;
 
 const MOBILE_STYLES = `
-  html { scroll-behavior: smooth; }
+  html { 
+    scroll-behavior: smooth;
+  }
+  body {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-y pan-x !important;
+  }
 
   .mobile-section {
     content-visibility: auto;
     contain-intrinsic-size: auto 100vh;
+    min-height: 100vh;
+    position: relative;
   }
   .mobile-section:nth-child(1),
   .mobile-section:nth-child(2) {
@@ -92,15 +109,13 @@ const MOBILE_STYLES = `
 // ─── COMPONENT ────────────────────────────────────────────────────────────────
 export default function Home() {
   const [isReady, setIsReady] = useState(false);
-
-  // ✅ FIX: Pre-seed mobile state from UA so we never flash the desktop layout
-  // on mobile, and never briefly run GSAP/Lenis on a phone.
-  const [isMobile, setIsMobile] = useState<boolean>(IS_MOBILE_UA);
+  const [isMobile, setIsMobile] = useState<boolean>(true); // Default to mobile for safety
   const mainRef = useRef<HTMLDivElement>(null);
 
   // ── Mobile detection ────────────────────────────────────────────────────────
   const checkMobile = useCallback(() => {
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT || IS_MOBILE_UA);
+    const mobile = detectMobile();
+    setIsMobile(mobile);
   }, []);
 
   useEffect(() => {
@@ -123,28 +138,34 @@ export default function Home() {
   }, [checkMobile]);
 
   // ── Scroll body styles ──────────────────────────────────────────────────────
-  // ✅ FIX: Removed ScrollTrigger.normalizeScroll() entirely.
-  // It directly conflicts with Lenis smooth scroll — using both causes
-  // double normalization that breaks scrolling on many devices.
-  // Lenis (desktop-only in SmoothScrollProvider) handles normalization.
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
     document.documentElement.style.scrollBehavior = isMobile ? 'smooth' : 'auto';
     document.body.style.overscrollBehavior = 'none';
-    document.body.style.touchAction = 'pan-y';
+    
+    if (isMobile) {
+      // ✅ CRITICAL: Force scroll on mobile
+      document.body.style.overflowY = 'auto';
+      document.body.style.overflowX = 'hidden';
+      document.body.style.touchAction = 'pan-y pan-x';
+      document.body.style.webkitOverflowScrolling = 'touch';
+    } else {
+      document.body.style.touchAction = 'pan-y';
+    }
 
     return () => {
       document.body.style.overscrollBehavior = '';
       document.body.style.touchAction = '';
+      document.body.style.overflowY = '';
+      document.body.style.overflowX = '';
     };
   }, [isMobile]);
 
   // ── GSAP animations — desktop only ────────────────────────────────────────
-  // ✅ FIX: Added IS_MOBILE_UA guard so GSAP never initialises on a phone,
-  // even during the brief window before isMobile state updates.
   useEffect(() => {
-    if (!isReady || !mainRef.current || isMobile || IS_MOBILE_UA) return;
+    // ✅ Exit early on mobile - no GSAP on mobile devices
+    if (!isReady || !mainRef.current || isMobile) return;
 
     const ctx = gsap.context(() => {
       ScrollTrigger.clearScrollMemory('manual');
@@ -261,7 +282,7 @@ export default function Home() {
   if (isMobile) {
     return (
       <>
-        <style>{SHARED_STYLES + MOBILE_STYLES}</style>
+        <style dangerouslySetInnerHTML={{ __html: SHARED_STYLES + MOBILE_STYLES }} />
         <main className="relative bg-black min-h-screen">
           <section className="mobile-section relative h-screen w-full bg-black">
             <HeroSection />
@@ -290,7 +311,7 @@ export default function Home() {
   // ── DESKTOP LAYOUT ─────────────────────────────────────────────────────────
   return (
     <>
-      <style>{SHARED_STYLES + DESKTOP_STYLES}</style>
+      <style dangerouslySetInnerHTML={{ __html: SHARED_STYLES + DESKTOP_STYLES }} />
 
       <main
         ref={mainRef}

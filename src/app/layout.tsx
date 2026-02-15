@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-// import SmoothScrollProvider from "./providers/SmoothScrollProvider";
 import ClientLayout from "./ClientLayout";
 
 const inter = Inter({
@@ -370,9 +369,7 @@ export default function RootLayout({
         className={`${inter.className} bg-black text-white antialiased`}
         suppressHydrationWarning
       >
-        {/* <SmoothScrollProvider> */}
-          <ClientLayout>{children}</ClientLayout>
-        {/* </SmoothScrollProvider> */}
+        <ClientLayout>{children}</ClientLayout>
       </body>
     </html>
   );
