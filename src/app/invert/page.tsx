@@ -1,8 +1,15 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
+
+// Register GSAP
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 // ─── Lazy-load heavy 3D section ───────────────────────────────────────────────
 const PlanetScroll = dynamic(() => import('@/components/layout/PlanetScroll'), {
@@ -16,14 +23,66 @@ const PlanetScroll = dynamic(() => import('@/components/layout/PlanetScroll'), {
 
 export default function InvertPage() {
   const [heroLoaded, setHeroLoaded] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   // Stable handler (prevents rerenders)
   const handleHeroLoad = useCallback(() => setHeroLoaded(true), []);
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // ✅ Proper ScrollTrigger initialization
+  useEffect(() => {
+    if (!mounted) return;
+
+    // ✅ Configure ScrollTrigger for native scroll
+    ScrollTrigger.config({
+      ignoreMobileResize: true,
+      autoRefreshEvents: 'visibilitychange,DOMContentLoaded,load',
+    });
+
+    // ✅ Clear any existing ScrollTriggers from previous pages
+    ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
+
+    // ✅ Refresh after mount
+    const refreshTimer = setTimeout(() => {
+      ScrollTrigger.refresh();
+    }, 100);
+
+    return () => {
+      clearTimeout(refreshTimer);
+      // ✅ Clean up on unmount
+      ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
+    };
+  }, [mounted]);
+
+  // ✅ Ensure native scroll behavior
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    document.documentElement.style.scrollBehavior = 'smooth';
+    document.body.style.overscrollBehavior = 'auto';
+    document.body.style.touchAction = 'pan-y';
+
+    return () => {
+      document.body.style.overscrollBehavior = '';
+      document.body.style.touchAction = '';
+    };
+  }, []);
+
+  if (!mounted) {
+    return <div className="fixed inset-0 bg-black" />;
+  }
+
   return (
     <main
       className="relative bg-black text-white selection:bg-purple-500 selection:text-white overflow-x-hidden"
-      style={{ overscrollBehavior: 'none', touchAction: 'pan-y' }}
+      style={{ 
+        overscrollBehavior: 'auto', 
+        touchAction: 'pan-y',
+        overflowX: 'hidden',
+      }}
     >
       {/* ─────────────────────────────────────────────────────────────
           HERO SECTION

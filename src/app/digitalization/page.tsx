@@ -4,26 +4,74 @@ import React, { useEffect, useRef, useState } from "react";
 import { Mail, Phone, Instagram, Twitter, Linkedin, Send } from "lucide-react";
 import { motion } from "framer-motion";
 import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { MotionPathPlugin } from "gsap/MotionPathPlugin";
 
 if (typeof window !== "undefined") {
-  gsap.registerPlugin(MotionPathPlugin);
+  gsap.registerPlugin(ScrollTrigger, MotionPathPlugin);
 }
 
 // ⚠️ REPLACE THIS WITH YOUR GOOGLE APPS SCRIPT URL
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1wbBD_xqiRN9bWOKohqnAQSIUKFDBnnT-lS2RGQqJP--QjnDu_Nw1LpmXPx1_xBQg/exec";
 
 export default function ContactPage() {
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const formRef = useRef<HTMLDivElement | null>(null);
   const startedTextRef = useRef<HTMLSpanElement | null>(null);
   const formTitleRef = useRef<HTMLHeadingElement | null>(null);
   const arrowSvgRef = useRef<SVGSVGElement | null>(null);
   const arrowPathRef = useRef<SVGPathElement | null>(null);
 
+  const [mounted, setMounted] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [hasAnimated, setHasAnimated] = useState(false);
   const [formState, setFormState] = useState<'idle' | 'submitting' | 'success'>('idle');
 
+  // ✅ Mount detection
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // ✅ GSAP ScrollTrigger initialization
+  useEffect(() => {
+    if (!mounted || !containerRef.current) return;
+
+    // Configure ScrollTrigger for native scroll
+    ScrollTrigger.config({
+      ignoreMobileResize: true,
+      autoRefreshEvents: 'visibilitychange,DOMContentLoaded,load',
+    });
+
+    // Clear any existing ScrollTriggers from previous pages
+    ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
+
+    // Refresh after mount
+    const refreshTimer = setTimeout(() => {
+      ScrollTrigger.refresh();
+    }, 100);
+
+    return () => {
+      clearTimeout(refreshTimer);
+      // Clean up on unmount
+      ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
+    };
+  }, [mounted]);
+
+  // ✅ Ensure native scroll behavior
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    document.documentElement.style.scrollBehavior = 'smooth';
+    document.body.style.overscrollBehavior = 'auto';
+    document.body.style.touchAction = 'pan-y';
+
+    return () => {
+      document.body.style.overscrollBehavior = '';
+      document.body.style.touchAction = '';
+    };
+  }, []);
+
+  // Mobile detection
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
@@ -75,6 +123,7 @@ export default function ContactPage() {
   // Arrow animation
   useEffect(() => {
     if (
+      !mounted ||
       isMobile ||
       hasAnimated ||
       !startedTextRef.current ||
@@ -155,10 +204,23 @@ export default function ContactPage() {
       window.removeEventListener("resize", handleResize);
       gsap.killTweensOf([svg, path, "#digitalization-arrow-icon"]);
     };
-  }, [isMobile, hasAnimated]);
+  }, [mounted, isMobile, hasAnimated]);
+
+  // ✅ Prevent FOUC
+  if (!mounted) {
+    return <div className="fixed inset-0 bg-[#05020a]" />;
+  }
 
   return (
-    <div className="min-h-screen bg-[#05020a] text-white overflow-hidden relative selection:bg-purple-500/30">
+    <div 
+      ref={containerRef}
+      className="min-h-screen bg-[#05020a] text-white overflow-hidden relative selection:bg-purple-500/30"
+      style={{ 
+        touchAction: 'pan-y', 
+        overscrollBehavior: 'auto',
+        overflowX: 'hidden',
+      }}
+    >
       {/* BACKGROUND */}
       <div className="absolute inset-0 z-0">
         <div

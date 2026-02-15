@@ -35,20 +35,21 @@ const SHARED_STYLES = `
     -moz-osx-font-smoothing: grayscale;
     box-sizing: border-box;
   }
+
   html {
-    overscroll-behavior: none;
     text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;
+    overflow-x: hidden;
   }
+
   body {
     overflow-x: hidden;
     margin: 0;
     background: #000;
-    overscroll-behavior: none;
-    touch-action: pan-y;
   }
-  ::-webkit-scrollbar { width: 0; }
-  ::-webkit-scrollbar-track { display: none; }
+
+  /* Hide scrollbar but allow scroll */
+  ::-webkit-scrollbar { width: 0px; height: 0px; }
 `;
 
 const DESKTOP_STYLES = `
@@ -92,9 +93,6 @@ const MOBILE_STYLES = `
 // ─── COMPONENT ────────────────────────────────────────────────────────────────
 export default function Home() {
   const [isReady, setIsReady] = useState(false);
-
-  // ✅ FIX: Pre-seed mobile state from UA so we never flash the desktop layout
-  // on mobile, and never briefly run GSAP/Lenis on a phone.
   const [isMobile, setIsMobile] = useState<boolean>(IS_MOBILE_UA);
   const mainRef = useRef<HTMLDivElement>(null);
 
@@ -123,15 +121,11 @@ export default function Home() {
   }, [checkMobile]);
 
   // ── Scroll body styles ──────────────────────────────────────────────────────
-  // ✅ FIX: Removed ScrollTrigger.normalizeScroll() entirely.
-  // It directly conflicts with Lenis smooth scroll — using both causes
-  // double normalization that breaks scrolling on many devices.
-  // Lenis (desktop-only in SmoothScrollProvider) handles normalization.
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
     document.documentElement.style.scrollBehavior = isMobile ? 'smooth' : 'auto';
-    document.body.style.overscrollBehavior = 'none';
+    document.body.style.overscrollBehavior = 'auto';
     document.body.style.touchAction = 'pan-y';
 
     return () => {
@@ -141,8 +135,6 @@ export default function Home() {
   }, [isMobile]);
 
   // ── GSAP animations — desktop only ────────────────────────────────────────
-  // ✅ FIX: Added IS_MOBILE_UA guard so GSAP never initialises on a phone,
-  // even during the brief window before isMobile state updates.
   useEffect(() => {
     if (!isReady || !mainRef.current || isMobile || IS_MOBILE_UA) return;
 
@@ -262,7 +254,7 @@ export default function Home() {
     return (
       <>
         <style>{SHARED_STYLES + MOBILE_STYLES}</style>
-        <main className="relative bg-black min-h-screen">
+        <main className="relative bg-black min-h-screen" data-page="home">
           <section className="mobile-section relative h-screen w-full bg-black">
             <HeroSection />
           </section>
@@ -295,9 +287,9 @@ export default function Home() {
       <main
         ref={mainRef}
         className="relative bg-black min-h-screen"
+        data-page="home"
         style={{
           overflowX: 'hidden',
-          overflowY: 'auto',
           touchAction: 'pan-y',
         }}
       >

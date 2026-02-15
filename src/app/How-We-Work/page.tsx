@@ -11,7 +11,7 @@ if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
 }
 
-export default function PortfolioPage() {
+export default function AboutPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
 
@@ -19,22 +19,58 @@ export default function PortfolioPage() {
     setMounted(true);
   }, []);
 
-  // Single ScrollTrigger refresh after everything loads
+  // ✅ Proper ScrollTrigger initialization
   useEffect(() => {
-    if (!mounted) return;
+    if (!mounted || !containerRef.current) return;
 
-    const timer = setTimeout(() => {
+    // ✅ Configure ScrollTrigger for native scroll
+    ScrollTrigger.config({
+      ignoreMobileResize: true,
+      autoRefreshEvents: 'visibilitychange,DOMContentLoaded,load',
+    });
+
+    // ✅ Clear any existing ScrollTriggers from previous pages
+    ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
+
+    // ✅ Refresh after mount
+    const refreshTimer = setTimeout(() => {
       ScrollTrigger.refresh();
     }, 100);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(refreshTimer);
+      // ✅ Clean up on unmount
+      ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
+    };
   }, [mounted]);
+
+  // ✅ Ensure native scroll behavior
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    document.documentElement.style.scrollBehavior = 'smooth';
+    document.body.style.overscrollBehavior = 'auto';
+    document.body.style.touchAction = 'pan-y';
+
+    return () => {
+      document.body.style.overscrollBehavior = '';
+      document.body.style.touchAction = '';
+    };
+  }, []);
+
+  if (!mounted) {
+    return <div className="fixed inset-0 bg-black" />;
+  }
 
   return (
     <main
       ref={containerRef}
       className="bg-black min-h-screen text-white overflow-x-hidden"
-      style={{ touchAction: 'pan-y', overscrollBehavior: 'none' }}
+      style={{ 
+        touchAction: 'pan-y', 
+        overscrollBehavior: 'auto',
+        overflowX: 'hidden',
+      }}
     >
       <AboutHero />
       <RoadmapJourney />
