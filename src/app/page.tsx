@@ -43,24 +43,25 @@ const SHARED_STYLES = `
     box-sizing: border-box;
   }
   html {
+    scroll-behavior: smooth;
     overscroll-behavior: none;
     text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;
   }
   body {
     overflow-x: hidden;
+    overflow-y: auto;
     margin: 0;
     background: #000;
     overscroll-behavior: none;
   }
-  ::-webkit-scrollbar { width: 0; }
-  ::-webkit-scrollbar-track { display: none; }
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: #000; }
+  ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: #555; }
 `;
 
 const DESKTOP_STYLES = `
-  html { scroll-behavior: auto; }
-  body { touch-action: pan-y; }
-
   #hero-black-overlay,
   #who-we-are-portal-content,
   #what-we-do-portal-content,
@@ -84,32 +85,20 @@ const DESKTOP_STYLES = `
 `;
 
 const MOBILE_STYLES = `
-  html { 
-    scroll-behavior: smooth;
-  }
   body {
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    -webkit-overflow-scrolling: touch !important;
-    touch-action: pan-y pan-x !important;
+    -webkit-overflow-scrolling: touch;
   }
 
   .mobile-section {
-    content-visibility: auto;
-    contain-intrinsic-size: auto 100vh;
     min-height: 100vh;
     position: relative;
-  }
-  .mobile-section:nth-child(1),
-  .mobile-section:nth-child(2) {
-    content-visibility: visible;
   }
 `;
 
 // ─── COMPONENT ────────────────────────────────────────────────────────────────
 export default function Home() {
   const [isReady, setIsReady] = useState(false);
-  const [isMobile, setIsMobile] = useState<boolean>(true); // Default to mobile for safety
+  const [isMobile, setIsMobile] = useState<boolean>(true);
   const mainRef = useRef<HTMLDivElement>(null);
 
   // ── Mobile detection ────────────────────────────────────────────────────────
@@ -137,34 +126,8 @@ export default function Home() {
     };
   }, [checkMobile]);
 
-  // ── Scroll body styles ──────────────────────────────────────────────────────
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    document.documentElement.style.scrollBehavior = isMobile ? 'smooth' : 'auto';
-    document.body.style.overscrollBehavior = 'none';
-    
-    if (isMobile) {
-      // ✅ CRITICAL: Force scroll on mobile
-      document.body.style.overflowY = 'auto';
-      document.body.style.overflowX = 'hidden';
-      document.body.style.touchAction = 'pan-y pan-x';
-      document.body.style.webkitOverflowScrolling = 'touch';
-    } else {
-      document.body.style.touchAction = 'pan-y';
-    }
-
-    return () => {
-      document.body.style.overscrollBehavior = '';
-      document.body.style.touchAction = '';
-      document.body.style.overflowY = '';
-      document.body.style.overflowX = '';
-    };
-  }, [isMobile]);
-
   // ── GSAP animations — desktop only ────────────────────────────────────────
   useEffect(() => {
-    // ✅ Exit early on mobile - no GSAP on mobile devices
     if (!isReady || !mainRef.current || isMobile) return;
 
     const ctx = gsap.context(() => {
@@ -319,7 +282,6 @@ export default function Home() {
         style={{
           overflowX: 'hidden',
           overflowY: 'auto',
-          touchAction: 'pan-y',
         }}
       >
         {/* SECTION 1: HERO */}
