@@ -9,23 +9,23 @@ import CTASection from '@/components/layout/CTASection';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-// ─── MODULE-LEVEL CONSTANTS ───────────────────────────────────────────────────
-const IS_MOBILE_UA =
-  typeof navigator !== 'undefined' &&
-  /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+// ─── MOBILE DETECTION ─────────────────────────────────────────────────────────
+const detectMobile = () => {
+  if (typeof window === 'undefined') return false;
+  
+  return (
+    window.innerWidth < 1024 ||
+    'ontouchstart' in window ||
+    navigator.maxTouchPoints > 0 ||
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    )
+  );
+};
 
-const MOBILE_BREAKPOINT = 768;
-
-// Register GSAP plugin once at module scope (safe for SSR)
+// Register GSAP plugin once at module scope
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
-  gsap.ticker.lagSmoothing(0);
-  gsap.config({ force3D: true });
-  ScrollTrigger.config({
-    ignoreMobileResize: true,
-    autoRefreshEvents: 'visibilitychange,DOMContentLoaded,load',
-    limitCallbacks: true,
-  });
 }
 
 // ─── STYLES ───────────────────────────────────────────────────────────────────
@@ -36,6 +36,7 @@ const SHARED_STYLES = `
     box-sizing: border-box;
   }
   html {
+    scroll-behavior: smooth;
     overscroll-behavior: none;
     text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;
@@ -45,15 +46,26 @@ const SHARED_STYLES = `
     margin: 0;
     background: #000;
     overscroll-behavior: none;
-    touch-action: pan-y;
   }
-  ::-webkit-scrollbar { width: 0; }
-  ::-webkit-scrollbar-track { display: none; }
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: #000; }
+  ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+`;
+
+const MOBILE_STYLES = `
+  body {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  
+  .mobile-section {
+    min-height: 100vh;
+    position: relative;
+  }
 `;
 
 const DESKTOP_STYLES = `
-  html { scroll-behavior: auto; }
-
   #hero-black-overlay,
   #who-we-are-portal-content,
   #what-we-do-portal-content,
@@ -62,104 +74,59 @@ const DESKTOP_STYLES = `
   #cta-reveal-layer {
     will-change: transform, opacity;
     transform: translate3d(0, 0, 0);
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-  }
-
-  #hero                     { contain: layout style paint; }
-  #who-we-are               { contain: layout style paint; }
-  #zoom-portal-trigger      { contain: layout style; }
-  #morph-transition-trigger { contain: layout style; }
-
-  @supports (-webkit-touch-callout: none) {
-    body { cursor: pointer; }
-  }
-`;
-
-const MOBILE_STYLES = `
-  html { scroll-behavior: smooth; }
-
-  .mobile-section {
-    content-visibility: auto;
-    contain-intrinsic-size: auto 100vh;
-  }
-  .mobile-section:nth-child(1),
-  .mobile-section:nth-child(2) {
-    content-visibility: visible;
   }
 `;
 
 // ─── COMPONENT ────────────────────────────────────────────────────────────────
 export default function Home() {
+  const [isMobile, setIsMobile] = useState<boolean>(true); // Default to mobile for safety
   const [isReady, setIsReady] = useState(false);
-
-  // ✅ FIX: Pre-seed mobile state from UA so we never flash the desktop layout
-  // on mobile, and never briefly run GSAP/Lenis on a phone.
-  const [isMobile, setIsMobile] = useState<boolean>(IS_MOBILE_UA);
   const mainRef = useRef<HTMLDivElement>(null);
 
-  // ── Mobile detection ────────────────────────────────────────────────────────
-  const checkMobile = useCallback(() => {
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT || IS_MOBILE_UA);
-  }, []);
-
+  // ── Mobile detection with proper hydration ─────────────────────────────────
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    const checkAndSetMobile = () => {
+      const mobile = detectMobile();
+      setIsMobile(mobile);
+      setIsReady(true);
+      console.log('Device type:', mobile ? 'Mobile' : 'Desktop');
+    };
 
-    checkMobile();
-    setIsReady(true);
+    checkAndSetMobile();
 
     let rafId: number;
-    const debouncedCheck = () => {
+    const handleResize = () => {
       cancelAnimationFrame(rafId);
-      rafId = requestAnimationFrame(checkMobile);
+      rafId = requestAnimationFrame(checkAndSetMobile);
     };
 
-    window.addEventListener('resize', debouncedCheck, { passive: true });
-    return () => {
-      window.removeEventListener('resize', debouncedCheck);
-      cancelAnimationFrame(rafId);
-    };
-  }, [checkMobile]);
-
-  // ── Scroll body styles ──────────────────────────────────────────────────────
-  // ✅ FIX: Removed ScrollTrigger.normalizeScroll() entirely.
-  // It directly conflicts with Lenis smooth scroll — using both causes
-  // double normalization that breaks scrolling on many devices.
-  // Lenis (desktop-only in SmoothScrollProvider) handles normalization.
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    document.documentElement.style.scrollBehavior = isMobile ? 'smooth' : 'auto';
-    document.body.style.overscrollBehavior = 'none';
-    document.body.style.touchAction = 'pan-y';
+    window.addEventListener('resize', handleResize, { passive: true });
 
     return () => {
-      document.body.style.overscrollBehavior = '';
-      document.body.style.touchAction = '';
+      window.removeEventListener('resize', handleResize);
+      cancelAnimationFrame(rafId);
     };
-  }, [isMobile]);
+  }, []);
 
-  // ── GSAP animations — desktop only ────────────────────────────────────────
-  // ✅ FIX: Added IS_MOBILE_UA guard so GSAP never initialises on a phone,
-  // even during the brief window before isMobile state updates.
+  // ── GSAP animations — DESKTOP ONLY ─────────────────────────────────────────
   useEffect(() => {
-    if (!isReady || !mainRef.current || isMobile || IS_MOBILE_UA) return;
+    if (!isReady || isMobile || !mainRef.current) return;
+
+    console.log('Initializing GSAP animations (desktop only)');
 
     const ctx = gsap.context(() => {
-      ScrollTrigger.clearScrollMemory('manual');
+      // Clear any existing scroll triggers
+      ScrollTrigger.getAll().forEach(st => st.kill());
 
       // ── 1) HERO OVERLAY FADE ──────────────────────────────────────────────
       gsap.to('#hero-black-overlay', {
         opacity: 1,
         ease: 'none',
-        overwrite: 'auto',
         scrollTrigger: {
           trigger: '#who-we-are',
           start: 'top 90%',
           end: 'top 20%',
           scrub: true,
-          invalidateOnRefresh: true,
         },
       });
 
@@ -171,28 +138,19 @@ export default function Home() {
           end: '+=150%',
           scrub: 1,
           pin: true,
-          pinSpacing: true,
           anticipatePin: 1,
-          invalidateOnRefresh: true,
-          fastScrollEnd: 3000,
         },
       })
-        .to(
-          '#who-we-are-portal-content',
-          {
-            scale: 4,
-            opacity: 0,
-            filter: 'blur(18px)',
-            ease: 'power2.inOut',
-            duration: 1,
-            overwrite: 'auto',
-          },
-          0
-        )
-        .fromTo(
-          '#what-we-do-portal-content',
-          { scale: 0.25, opacity: 0, filter: 'blur(25px)', pointerEvents: 'none' },
-          { scale: 1, opacity: 1, filter: 'blur(0px)', pointerEvents: 'auto', ease: 'power2.out', duration: 1 },
+        .to('#who-we-are-portal-content', {
+          scale: 4,
+          opacity: 0,
+          filter: 'blur(18px)',
+          ease: 'power2.inOut',
+          duration: 1,
+        }, 0)
+        .fromTo('#what-we-do-portal-content', 
+          { scale: 0.25, opacity: 0, filter: 'blur(25px)' },
+          { scale: 1, opacity: 1, filter: 'blur(0px)', ease: 'power2.out', duration: 1 },
           0.25
         );
 
@@ -204,32 +162,29 @@ export default function Home() {
           end: '+=150%',
           scrub: 1,
           pin: true,
-          pinSpacing: true,
           anticipatePin: 1,
-          invalidateOnRefresh: true,
-          fastScrollEnd: 3000,
         },
       })
-        .to(
-          '#what-we-do-layer',
-          { opacity: 0, scale: 0.9, filter: 'blur(18px)', duration: 0.6, ease: 'power2.in', overwrite: 'auto' },
-          0
-        )
-        .fromTo(
-          '#morph-blob',
+        .to('#what-we-do-layer', {
+          opacity: 0,
+          scale: 0.9,
+          filter: 'blur(18px)',
+          duration: 0.6,
+          ease: 'power2.in',
+        }, 0)
+        .fromTo('#morph-blob',
           { scale: 0, opacity: 0, borderRadius: '50%' },
           { scale: 18, opacity: 1, borderRadius: '20%', duration: 0.8, ease: 'power2.inOut' },
           0.2
         )
-        .fromTo(
-          '#cta-reveal-layer',
+        .fromTo('#cta-reveal-layer',
           { opacity: 0, y: 80, filter: 'blur(12px)' },
           { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.8, ease: 'power3.out' },
           0.5
         )
         .to('#morph-blob', { opacity: 0, duration: 0.4 }, 1.1);
 
-      // ── 4) GENERAL REVEALS ────────────────────────────────────────────────
+      // ── 4) FADE IN ANIMATIONS ────────────────────────────────────────────
       const fadeEls = gsap.utils.toArray<Element>('.fade-in-up');
       if (fadeEls.length) {
         gsap.set(fadeEls, { y: 50, opacity: 0 });
@@ -239,7 +194,6 @@ export default function Home() {
             opacity: 1,
             duration: 0.9,
             ease: 'power3.out',
-            overwrite: 'auto',
             scrollTrigger: {
               trigger: el,
               start: 'top 92%',
@@ -249,37 +203,48 @@ export default function Home() {
         });
       }
 
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => ScrollTrigger.refresh());
-      });
+      // Refresh after initialization
+      ScrollTrigger.refresh();
     }, mainRef);
 
-    return () => ctx.revert();
+    return () => {
+      console.log('Cleaning up GSAP');
+      ctx.revert();
+    };
   }, [isReady, isMobile]);
+
+  // ── Prevent flash before ready ─────────────────────────────────────────────
+  if (!isReady) {
+    return (
+      <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-white/20 border-t-white rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   // ── MOBILE LAYOUT ──────────────────────────────────────────────────────────
   if (isMobile) {
     return (
       <>
-        <style>{SHARED_STYLES + MOBILE_STYLES}</style>
-        <main className="relative bg-black min-h-screen">
-          <section className="mobile-section relative h-screen w-full bg-black">
+        <style dangerouslySetInnerHTML={{ __html: SHARED_STYLES + MOBILE_STYLES }} />
+        <main className="relative bg-black">
+          <section className="mobile-section">
             <HeroSection />
           </section>
 
-          <section className="mobile-section relative bg-black min-h-screen">
+          <section className="mobile-section">
             <WhoWeAreSection />
           </section>
 
-          <section className="mobile-section relative bg-black min-h-screen">
+          <section className="mobile-section">
             <WhatWeDoSection />
           </section>
 
-          <section className="mobile-section relative bg-black min-h-screen">
+          <section className="mobile-section">
             <ClientsSection />
           </section>
 
-          <section className="mobile-section relative bg-black min-h-screen">
+          <section className="mobile-section">
             <CTASection />
           </section>
         </main>
@@ -290,23 +255,11 @@ export default function Home() {
   // ── DESKTOP LAYOUT ─────────────────────────────────────────────────────────
   return (
     <>
-      <style>{SHARED_STYLES + DESKTOP_STYLES}</style>
+      <style dangerouslySetInnerHTML={{ __html: SHARED_STYLES + DESKTOP_STYLES }} />
 
-      <main
-        ref={mainRef}
-        className="relative bg-black min-h-screen"
-        style={{
-          overflowX: 'hidden',
-          overflowY: 'auto',
-          touchAction: 'pan-y',
-        }}
-      >
+      <main ref={mainRef} className="relative bg-black">
         {/* SECTION 1: HERO */}
-        <section
-          id="hero"
-          className="relative h-screen w-full bg-black"
-          style={{ transform: 'translate3d(0,0,0)' }}
-        >
+        <section id="hero" className="relative h-screen w-full bg-black">
           <HeroSection />
           <div
             id="hero-black-overlay"
@@ -318,8 +271,7 @@ export default function Home() {
         {/* SECTION 2: WHO WE ARE */}
         <section
           id="who-we-are"
-          className="relative z-10 bg-black min-h-screen shadow-[0_-50px_100px_rgba(0,0,0,0.9)]"
-          style={{ transform: 'translate3d(0,0,0)' }}
+          className="relative z-10 bg-black min-h-screen"
         >
           <WhoWeAreSection />
         </section>
@@ -328,7 +280,6 @@ export default function Home() {
         <section
           id="zoom-portal-trigger"
           className="relative z-20 h-screen w-full bg-black overflow-hidden"
-          style={{ transform: 'translate3d(0,0,0)' }}
         >
           <div
             id="who-we-are-portal-content"
@@ -345,7 +296,7 @@ export default function Home() {
 
           <div
             id="what-we-do-portal-content"
-            className="absolute inset-0 z-40 opacity-0 pointer-events-none"
+            className="absolute inset-0 z-40 opacity-0"
           >
             <WhatWeDoSection />
           </div>
@@ -355,7 +306,6 @@ export default function Home() {
         <section
           id="morph-transition-trigger"
           className="relative z-30 h-screen w-full overflow-hidden bg-black"
-          style={{ transform: 'translate3d(0,0,0)' }}
         >
           <div id="what-we-do-layer" className="absolute inset-0 z-40 bg-black">
             <ClientsSection />

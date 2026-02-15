@@ -291,7 +291,7 @@ export default function RoadmapJourney() {
         <foreignObject id="label-1" x="160" y="220" width="240" height="160" className="milestone-text">
           <div>
             <div className="milestone-text-content text-white text-[20px] font-bold tracking-tight uppercase leading-tight mb-2">
-              01 — Understand
+              01 - Understand
             </div>
             <div className="milestone-text-content text-white/80 text-[11px] font-light leading-relaxed max-w-[220px]">
               We study your business, audience, and direction.
@@ -302,7 +302,7 @@ export default function RoadmapJourney() {
         <foreignObject id="label-2" x="575" y="450" width="260" height="200" className="milestone-text">
           <div>
             <div className="milestone-text-content text-white text-[20px] font-bold tracking-tight uppercase leading-tight mb-2">
-              02 — Architect
+              02 - Architect
             </div>
             <div className="milestone-text-content text-white/80 text-[11px] font-light leading-relaxed max-w-[240px]">
               We define structure — from information architecture to technical foundations.
@@ -313,7 +313,7 @@ export default function RoadmapJourney() {
         <foreignObject id="label-3" x="540" y="710" width="240" height="180" className="milestone-text">
           <div>
             <div className="milestone-text-content text-white text-[20px] font-bold tracking-tight uppercase leading-tight mb-2">
-              03 — Translate
+              03 - Translate
             </div>
             <div className="milestone-text-content text-white/80 text-[11px] font-light leading-relaxed max-w-[220px]">
               Strategy becomes concept. Concept becomes system.
@@ -324,7 +324,7 @@ export default function RoadmapJourney() {
         <foreignObject id="label-4" x="170" y="900" width="260" height="180" className="milestone-text">
           <div className="text-right">
             <div className="milestone-text-content text-white text-[20px] font-bold tracking-tight uppercase leading-tight mb-2">
-              04 — Build
+              04 - Build
             </div>
             <div className="milestone-text-content text-white/80 text-[11px] font-light leading-relaxed max-w-[240px] ml-auto">
               Design and development move together — never in isolation.
@@ -335,7 +335,7 @@ export default function RoadmapJourney() {
         <foreignObject id="label-5" x="360" y="1300" width="260" height="180" className="milestone-text">
           <div>
             <div className="milestone-text-content text-white text-[20px] font-bold tracking-tight uppercase leading-tight mb-2">
-              05 — Validate
+              05 - Validate
             </div>
             <div className="milestone-text-content text-white/80 text-[11px] font-light leading-relaxed max-w-[240px]">
               Performance, usability, and scalability are tested and refined.
@@ -346,7 +346,7 @@ export default function RoadmapJourney() {
         <foreignObject id="label-6" x="90" y="1700" width="240" height="180" className="milestone-text">
           <div className="text-right">
             <div className="milestone-text-content text-white text-[20px] font-bold tracking-tight uppercase leading-tight mb-2">
-              06 — Scale
+              06 - Scale
             </div>
             <div className="milestone-text-content text-white/80 text-[11px] font-light leading-relaxed max-w-[220px] ml-auto">
               The system expands without losing coherence.

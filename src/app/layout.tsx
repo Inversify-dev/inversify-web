@@ -86,10 +86,6 @@ export const metadata: Metadata = {
     ],
   },
 
-  // ✅ REMOVED: manifest link — this is what triggers the "Install App" banner.
-  // Browsers see a valid manifest + icons and automatically show the PWA install prompt.
-  // manifest: "/site.webmanifest",
-
   openGraph: {
     type: "website",
     locale: "en_US",
@@ -149,12 +145,6 @@ export const metadata: Metadata = {
   },
 
   other: {
-    // ✅ REMOVED: "mobile-web-app-capable" and "apple-mobile-web-app-capable"
-    // These two meta tags are the second trigger for the install banner on Android & iOS.
-    // Removing them tells browsers this is a regular website, not an installable PWA.
-    // "mobile-web-app-capable": "yes",       ← REMOVED
-    // "apple-mobile-web-app-capable": "yes", ← REMOVED
-    // "apple-mobile-web-app-status-bar-style": "black-translucent", ← REMOVED (only applies to installed PWAs)
     "apple-mobile-web-app-title": "Inversify",
     "application-name": "Inversify",
     "msapplication-TileColor": "#000000",
