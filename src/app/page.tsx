@@ -9,19 +9,12 @@ import CTASection from '@/components/layout/CTASection';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-// ─── MOBILE DETECTION ─────────────────────────────────────────────────────────
-const detectMobile = () => {
-  if (typeof window === 'undefined') return false;
-  
-  return (
-    window.innerWidth < 1024 ||
-    'ontouchstart' in window ||
-    navigator.maxTouchPoints > 0 ||
-    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-      navigator.userAgent
-    )
-  );
-};
+// ─── MODULE-LEVEL CONSTANTS ───────────────────────────────────────────────────
+const IS_MOBILE_UA =
+  typeof navigator !== 'undefined' &&
+  /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+const MOBILE_BREAKPOINT = 768;
 
 // Register GSAP plugin once at module scope (safe for SSR)
 if (typeof window !== 'undefined') {
@@ -42,51 +35,25 @@ const SHARED_STYLES = `
     -moz-osx-font-smoothing: grayscale;
     box-sizing: border-box;
   }
-  
   html {
-    scroll-behavior: smooth !important;
     overscroll-behavior: none;
     text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;
-    overflow-x: hidden !important;
-    overflow-y: scroll !important;
-    height: 100% !important;
   }
-  
   body {
-    overflow-x: hidden !important;
-    overflow-y: scroll !important;
+    overflow-x: hidden;
     margin: 0;
-    padding: 0;
     background: #000;
     overscroll-behavior: none;
-    -webkit-overflow-scrolling: touch !important;
-    height: 100% !important;
-    min-height: 100vh !important;
+    touch-action: pan-y;
   }
-  
-  #__next {
-    overflow-x: hidden !important;
-    overflow-y: visible !important;
-  }
-  
-  ::-webkit-scrollbar { 
-    width: 8px; 
-    height: 8px;
-  }
-  ::-webkit-scrollbar-track { 
-    background: #000; 
-  }
-  ::-webkit-scrollbar-thumb { 
-    background: #333; 
-    border-radius: 4px; 
-  }
-  ::-webkit-scrollbar-thumb:hover { 
-    background: #555; 
-  }
+  ::-webkit-scrollbar { width: 0; }
+  ::-webkit-scrollbar-track { display: none; }
 `;
 
 const DESKTOP_STYLES = `
+  html { scroll-behavior: auto; }
+
   #hero-black-overlay,
   #who-we-are-portal-content,
   #what-we-do-portal-content,
@@ -110,37 +77,30 @@ const DESKTOP_STYLES = `
 `;
 
 const MOBILE_STYLES = `
-  * {
-    -webkit-overflow-scrolling: touch !important;
-  }
-  
-  html, body {
-    position: relative !important;
-    width: 100% !important;
-    height: auto !important;
-    min-height: 100vh !important;
-    overflow-x: hidden !important;
-    overflow-y: scroll !important;
-  }
+  html { scroll-behavior: smooth; }
 
   .mobile-section {
-    min-height: 100vh;
-    position: relative;
-    width: 100%;
-    overflow: visible;
+    content-visibility: auto;
+    contain-intrinsic-size: auto 100vh;
+  }
+  .mobile-section:nth-child(1),
+  .mobile-section:nth-child(2) {
+    content-visibility: visible;
   }
 `;
 
 // ─── COMPONENT ────────────────────────────────────────────────────────────────
 export default function Home() {
   const [isReady, setIsReady] = useState(false);
-  const [isMobile, setIsMobile] = useState<boolean>(true);
+
+  // ✅ FIX: Pre-seed mobile state from UA so we never flash the desktop layout
+  // on mobile, and never briefly run GSAP/Lenis on a phone.
+  const [isMobile, setIsMobile] = useState<boolean>(IS_MOBILE_UA);
   const mainRef = useRef<HTMLDivElement>(null);
 
   // ── Mobile detection ────────────────────────────────────────────────────────
   const checkMobile = useCallback(() => {
-    const mobile = detectMobile();
-    setIsMobile(mobile);
+    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT || IS_MOBILE_UA);
   }, []);
 
   useEffect(() => {
@@ -162,27 +122,29 @@ export default function Home() {
     };
   }, [checkMobile]);
 
-  // ── Force scroll capability on mount ────────────────────────────────────────
+  // ── Scroll body styles ──────────────────────────────────────────────────────
+  // ✅ FIX: Removed ScrollTrigger.normalizeScroll() entirely.
+  // It directly conflicts with Lenis smooth scroll — using both causes
+  // double normalization that breaks scrolling on many devices.
+  // Lenis (desktop-only in SmoothScrollProvider) handles normalization.
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // Force scroll styles on document
-    document.documentElement.style.overflowY = 'scroll';
-    document.documentElement.style.overflowX = 'hidden';
-    document.body.style.overflowY = 'scroll';
-    document.body.style.overflowX = 'hidden';
-    document.body.style.webkitOverflowScrolling = 'touch';
-    document.body.style.position = 'relative';
-    document.body.style.minHeight = '100vh';
+    document.documentElement.style.scrollBehavior = isMobile ? 'smooth' : 'auto';
+    document.body.style.overscrollBehavior = 'none';
+    document.body.style.touchAction = 'pan-y';
 
     return () => {
-      // Cleanup not needed - keep scroll enabled
+      document.body.style.overscrollBehavior = '';
+      document.body.style.touchAction = '';
     };
-  }, []);
+  }, [isMobile]);
 
   // ── GSAP animations — desktop only ────────────────────────────────────────
+  // ✅ FIX: Added IS_MOBILE_UA guard so GSAP never initialises on a phone,
+  // even during the brief window before isMobile state updates.
   useEffect(() => {
-    if (!isReady || !mainRef.current || isMobile) return;
+    if (!isReady || !mainRef.current || isMobile || IS_MOBILE_UA) return;
 
     const ctx = gsap.context(() => {
       ScrollTrigger.clearScrollMemory('manual');
@@ -299,15 +261,8 @@ export default function Home() {
   if (isMobile) {
     return (
       <>
-        <style dangerouslySetInnerHTML={{ __html: SHARED_STYLES + MOBILE_STYLES }} />
-        <main 
-          className="relative bg-black min-h-screen w-full"
-          style={{
-            overflowX: 'hidden',
-            overflowY: 'visible',
-            position: 'relative',
-          }}
-        >
+        <style>{SHARED_STYLES + MOBILE_STYLES}</style>
+        <main className="relative bg-black min-h-screen">
           <section className="mobile-section relative h-screen w-full bg-black">
             <HeroSection />
           </section>
@@ -335,15 +290,15 @@ export default function Home() {
   // ── DESKTOP LAYOUT ─────────────────────────────────────────────────────────
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: SHARED_STYLES + DESKTOP_STYLES }} />
+      <style>{SHARED_STYLES + DESKTOP_STYLES}</style>
 
       <main
         ref={mainRef}
-        className="relative bg-black min-h-screen w-full"
+        className="relative bg-black min-h-screen"
         style={{
           overflowX: 'hidden',
-          overflowY: 'visible',
-          position: 'relative',
+          overflowY: 'auto',
+          touchAction: 'pan-y',
         }}
       >
         {/* SECTION 1: HERO */}
