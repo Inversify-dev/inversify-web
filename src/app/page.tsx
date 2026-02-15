@@ -42,23 +42,48 @@ const SHARED_STYLES = `
     -moz-osx-font-smoothing: grayscale;
     box-sizing: border-box;
   }
+  
   html {
-    scroll-behavior: smooth;
+    scroll-behavior: smooth !important;
     overscroll-behavior: none;
     text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;
+    overflow-x: hidden !important;
+    overflow-y: scroll !important;
+    height: 100% !important;
   }
+  
   body {
-    overflow-x: hidden;
-    overflow-y: auto;
+    overflow-x: hidden !important;
+    overflow-y: scroll !important;
     margin: 0;
+    padding: 0;
     background: #000;
     overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch !important;
+    height: 100% !important;
+    min-height: 100vh !important;
   }
-  ::-webkit-scrollbar { width: 8px; }
-  ::-webkit-scrollbar-track { background: #000; }
-  ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
-  ::-webkit-scrollbar-thumb:hover { background: #555; }
+  
+  #__next {
+    overflow-x: hidden !important;
+    overflow-y: visible !important;
+  }
+  
+  ::-webkit-scrollbar { 
+    width: 8px; 
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track { 
+    background: #000; 
+  }
+  ::-webkit-scrollbar-thumb { 
+    background: #333; 
+    border-radius: 4px; 
+  }
+  ::-webkit-scrollbar-thumb:hover { 
+    background: #555; 
+  }
 `;
 
 const DESKTOP_STYLES = `
@@ -85,13 +110,24 @@ const DESKTOP_STYLES = `
 `;
 
 const MOBILE_STYLES = `
-  body {
-    -webkit-overflow-scrolling: touch;
+  * {
+    -webkit-overflow-scrolling: touch !important;
+  }
+  
+  html, body {
+    position: relative !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow-x: hidden !important;
+    overflow-y: scroll !important;
   }
 
   .mobile-section {
     min-height: 100vh;
     position: relative;
+    width: 100%;
+    overflow: visible;
   }
 `;
 
@@ -125,6 +161,24 @@ export default function Home() {
       cancelAnimationFrame(rafId);
     };
   }, [checkMobile]);
+
+  // ── Force scroll capability on mount ────────────────────────────────────────
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    // Force scroll styles on document
+    document.documentElement.style.overflowY = 'scroll';
+    document.documentElement.style.overflowX = 'hidden';
+    document.body.style.overflowY = 'scroll';
+    document.body.style.overflowX = 'hidden';
+    document.body.style.webkitOverflowScrolling = 'touch';
+    document.body.style.position = 'relative';
+    document.body.style.minHeight = '100vh';
+
+    return () => {
+      // Cleanup not needed - keep scroll enabled
+    };
+  }, []);
 
   // ── GSAP animations — desktop only ────────────────────────────────────────
   useEffect(() => {
@@ -246,7 +300,14 @@ export default function Home() {
     return (
       <>
         <style dangerouslySetInnerHTML={{ __html: SHARED_STYLES + MOBILE_STYLES }} />
-        <main className="relative bg-black min-h-screen">
+        <main 
+          className="relative bg-black min-h-screen w-full"
+          style={{
+            overflowX: 'hidden',
+            overflowY: 'visible',
+            position: 'relative',
+          }}
+        >
           <section className="mobile-section relative h-screen w-full bg-black">
             <HeroSection />
           </section>
@@ -278,10 +339,11 @@ export default function Home() {
 
       <main
         ref={mainRef}
-        className="relative bg-black min-h-screen"
+        className="relative bg-black min-h-screen w-full"
         style={{
           overflowX: 'hidden',
-          overflowY: 'auto',
+          overflowY: 'visible',
+          position: 'relative',
         }}
       >
         {/* SECTION 1: HERO */}
