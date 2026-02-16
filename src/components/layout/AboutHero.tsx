@@ -61,7 +61,10 @@ export default function AboutHero() {
         className="text-white text-7xl md:text-[160px] font-serif leading-none tracking-tighter mb-8 drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
         style={{ fontFamily: "'Playfair Display', serif" }}
       >
-        About <span className="italic font-light">Us</span>
+About{" "}
+<span className="italic font-serif font-light text-purple-400 drop-shadow-[0_0_20px_rgba(168,85,247,0.4)]">
+  Us
+</span>
       </h1>
 
       <div className="flex flex-col items-center gap-4 mb-12">
@@ -110,15 +113,19 @@ export default function AboutHero() {
       <div className="relative z-10 flex flex-col items-center text-center px-6" style={{ contain: 'layout style' }}>
         {animate ? (
           <>
-            <motion.h1
-              initial="hidden"
-              animate="visible"
-              variants={titleVariants}
-              className="text-white text-7xl md:text-[160px] font-serif leading-none tracking-tighter mb-8 drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
-              style={{ fontFamily: "'Playfair Display', serif" }}
-            >
-              About <span className="italic font-light">Us</span>
-            </motion.h1>
+<motion.h1
+  initial="hidden"
+  animate="visible"
+  variants={titleVariants}
+  className="text-white text-7xl md:text-[160px] font-serif leading-none tracking-tighter mb-8 drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
+  style={{ fontFamily: "'Playfair Display', serif" }}
+>
+  About{" "}
+  <span className="italic font-serif font-light text-purple-400 drop-shadow-[0_0_20px_rgba(168,85,247,0.4)]">
+    Us
+  </span>
+</motion.h1>
+
 
             <motion.div
               initial="hidden"

@@ -127,9 +127,10 @@ export default function InvertPage() {
               Ready To
             </span>
 
-            <span className="text-6xl sm:text-7xl md:text-9xl lg:text-[160px] font-serif italic font-normal text-white lowercase leading-none tracking-tight mt-1">
-              invert
-            </span>
+<span className="text-6xl sm:text-7xl md:text-9xl lg:text-[160px] font-serif italic font-light text-purple-400 lowercase leading-none tracking-tight mt-1 drop-shadow-[0_0_25px_rgba(168,85,247,0.55)]">
+  invert
+</span>
+
 
             <span className="text-sm sm:text-lg md:text-2xl mt-5 md:mt-8 text-white/60 font-light tracking-wide">
               Your digital universe awaits

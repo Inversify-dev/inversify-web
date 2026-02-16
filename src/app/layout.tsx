@@ -78,13 +78,14 @@ export const metadata: Metadata = {
     icon: [
       { url: "/favicon.ico" },
       { url: "/favicon.ico/favicon-32x32.png", sizes: "32x32", type: "image/png" },
-      { url: "/favicon.ico/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon.ico/favicon-16x16.ico", sizes: "16x16", type: "image/png" },
     ],
     shortcut: "/favicon.ico",
     apple: [
       { url: "/favicon.ico/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
     ],
   },
+  
 
   // ✅ REMOVED: manifest link — this is what triggers the "Install App" banner.
   // Browsers see a valid manifest + icons and automatically show the PWA install prompt.

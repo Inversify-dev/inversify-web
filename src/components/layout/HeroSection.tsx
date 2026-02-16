@@ -169,9 +169,9 @@ export default function HeroSection() {
       const endX = (buttonRect.left - svgRect.left) + 250;
       const endY = (buttonRect.top + buttonRect.height / 2) - svgRect.top;
 
-      const cp1X = startX + 280;
+      const cp1X = startX + 480;
       const cp1Y = startY + 80;
-      const cp2X = startX + 450;
+      const cp2X = startX + 500;
       const cp2Y = startY + 280;
       const cp3X = endX + 380;
       const cp3Y = endY + 160;

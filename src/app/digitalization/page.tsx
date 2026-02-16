@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { Mail, Phone, Instagram, Twitter, Linkedin, Send } from "lucide-react";
+import { Mail, Phone, Instagram, Linkedin, Send } from "lucide-react";
+import { FaTiktok } from "react-icons/fa";
 import { motion } from "framer-motion";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -368,24 +369,25 @@ export default function ContactPage() {
               Follow Us
             </h3>
 
-            <div className="flex gap-8">
-              {[
-                { Icon: Instagram, href: "https://instagram.com/inversify", label: "Instagram" },
-                { Icon: Twitter, href: "https://twitter.com/inversify", label: "Twitter" },
-                { Icon: Linkedin, href: "https://linkedin.com/company/inversify", label: "LinkedIn" },
-              ].map(({ Icon, href, label }, idx) => (
-                <a
-                  key={idx}
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={label}
-                  className="text-gray-400 hover:text-white cursor-pointer transition-all hover:scale-125 hover:-translate-y-1"
-                >
-                  <Icon size={26} />
-                </a>
-              ))}
-            </div>
+<div className="flex gap-8">
+  {[
+    { Icon: Instagram, href: "https://instagram.com/inversify", label: "Instagram" },
+    { Icon: Linkedin, href: "https://linkedin.com/company/inversify", label: "LinkedIn" },
+    { Icon: FaTiktok, href: "https://tiktok.com/@inversify", label: "TikTok" },
+  ].map(({ Icon, href, label }, idx) => (
+    <a
+      key={idx}
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={label}
+      className="text-gray-400 hover:text-white cursor-pointer transition-all hover:scale-125 hover:-translate-y-1"
+    >
+      <Icon size={26} />
+    </a>
+  ))}
+</div>
+
           </motion.div>
         </div>
       </main>

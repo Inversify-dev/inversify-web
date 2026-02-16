@@ -169,11 +169,12 @@ const CinematicPlanet = memo(function CinematicPlanet({
     if (!meshRef.current) return;
     const target    = TARGET_ANGLES[activeIndex.current] ?? 0;
     const lerpSpeed = isMobile ? 0.06 : 0.04;
-    meshRef.current.rotation.y = THREE.MathUtils.lerp(
-      meshRef.current.rotation.y,
-      target + scrollProgress.current * 0.4,
-      lerpSpeed
-    );
+meshRef.current.rotation.y = THREE.MathUtils.lerp(
+  meshRef.current.rotation.y,
+  target + scrollProgress.current * 0.25, // slower scroll influence
+  lerpSpeed * 0.7                         // slower lerp reaction
+);
+
     const floatIntensity = isMobile ? 0.05 : 0.1;
     meshRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.4) * floatIntensity;
   });
@@ -321,81 +322,92 @@ export default function PlanetScroll() {
   }, []);
 
   // ── GSAP — DESKTOP ONLY ───────────────────────────────────────────────────
-  useGSAP(
-    () => {
-      if (!isVisible || isMobile) return;
+// ── GSAP — DESKTOP ONLY ───────────────────────────────────────────────────
+useGSAP(
+  () => {
+    if (!isVisible || isMobile) return;
 
-      const totalScroll = SECTIONS.length * 500;
-      const scrubSpeed  = 2.5;
+    const totalScroll = SECTIONS.length * 1200; // More scroll space => slower
+    const scrubSpeed  = 5.0;                     // Slower spin response
+
+    ScrollTrigger.create({
+      trigger: planetSectionRef.current,
+      start: 'top top',
+      end: `+=${totalScroll}px`,
+      pin: true,
+      scrub: scrubSpeed,
+      anticipatePin: 1,
+      fastScrollEnd: true,
+      invalidateOnRefresh: true,
+      id: 'planet-scroll',
+      onUpdate: (self) => {
+        scrollProgress.current = self.progress;
+        activeIndex.current = Math.min(
+          SECTIONS.length - 1,
+          Math.floor(self.progress * SECTIONS.length)
+        );
+      },
+    });
+
+    contentRefs.current.forEach((el, index) => {
+      if (!el) return;
+
+      gsap.set(el, { opacity: 0, y: 100, filter: 'blur(20px)' });
+
+      const segment = 1 / SECTIONS.length;
+      const start   = index * segment;
+      const end     = (index + 1) * segment;
+
+      // Slower reveal and longer visible duration
+      const revealStart = start + segment * 0.05;
+      const revealEnd   = start + segment * 0.35;
+
+      const fadeStart   = end - segment * 0.5; // start fading later
+      const fadeEnd     = end - segment * 0.05; // fade longer
 
       ScrollTrigger.create({
-        trigger:          planetSectionRef.current,
-        start:            'top top',
-        end:              `+=${totalScroll}px`,
-        pin:              true,
-        scrub:            scrubSpeed,
-        anticipatePin:    1,
-        fastScrollEnd:    true,
-        invalidateOnRefresh: true,
-        id:               'planet-scroll',
+        trigger: planetSectionRef.current,
+        start: 'top top',
+        end: `+=${totalScroll}px`,
+        scrub: 3.0, // slower animation
+        fastScrollEnd: true,
+        id: `planet-content-${index}`,
         onUpdate: (self) => {
-          scrollProgress.current = self.progress;
-          activeIndex.current = Math.min(
-            SECTIONS.length - 1,
-            Math.floor(self.progress * SECTIONS.length)
-          );
+          const p = self.progress;
+          let opacity = 0, y = 100, blur = 20, scale = 0.95;
+
+          if (p >= revealStart && p <= revealEnd) {
+            const t = (p - revealStart) / (revealEnd - revealStart);
+            opacity = t; 
+            y = 100 * (1 - t); 
+            blur = 20 * (1 - t); 
+            scale = 0.95 + t * 0.05;
+          } else if (p > revealEnd && p < fadeStart) {
+            opacity = 1; y = 0; blur = 0; scale = 1; // stays visible longer
+          } else if (p >= fadeStart && p <= fadeEnd) {
+            const t = (p - fadeStart) / (fadeEnd - fadeStart);
+            opacity = 1 - t; 
+            y = -60 * t; 
+            blur = 20 * t; 
+            scale = 1 - t * 0.03;
+          }
+
+          gsap.set(el, {
+            opacity,
+            y,
+            scale,
+            filter: `blur(${blur}px)`,
+            pointerEvents: opacity > 0.8 ? 'auto' : 'none',
+            visibility: opacity === 0 ? 'hidden' : 'visible',
+            force3D: true,
+          });
         },
       });
+    });
+  },
+  { scope: containerRef, dependencies: [isVisible, isMobile] }
+);
 
-      contentRefs.current.forEach((el, index) => {
-        if (!el) return;
-
-        gsap.set(el, { opacity: 0, y: 100, filter: 'blur(20px)' });
-
-        const segment    = 1 / SECTIONS.length;
-        const start      = index * segment;
-        const end        = (index + 1) * segment;
-        const revealStart = start + segment * 0.1;
-        const revealEnd   = start + segment * 0.4;
-        const fadeStart   = end - segment * 0.3;
-        const fadeEnd     = end - segment * 0.05;
-
-        ScrollTrigger.create({
-          trigger:          planetSectionRef.current,
-          start:            'top top',
-          end:              `+=${totalScroll}px`,
-          scrub:            1.2,
-          fastScrollEnd:    true,
-          id:               `planet-content-${index}`,
-          onUpdate: (self) => {
-            const p = self.progress;
-            let opacity = 0, y = 100, blur = 20, scale = 0.95;
-
-            if (p >= revealStart && p <= revealEnd) {
-              const t = (p - revealStart) / (revealEnd - revealStart);
-              opacity = t; y = 100 * (1 - t); blur = 20 * (1 - t); scale = 0.95 + t * 0.05;
-            } else if (p > revealEnd && p < fadeStart) {
-              opacity = 1; y = 0; blur = 0; scale = 1;
-            } else if (p >= fadeStart && p <= fadeEnd) {
-              const t = (p - fadeStart) / (fadeEnd - fadeStart);
-              opacity = 1 - t; y = -60 * t; blur = 20 * t; scale = 1 - t * 0.03;
-            }
-
-            gsap.set(el, {
-              opacity,
-              y,
-              scale,
-              filter:        `blur(${blur}px)`,
-              pointerEvents: opacity > 0.8 ? 'auto' : 'none',
-              visibility:    opacity === 0 ? 'hidden' : 'visible',
-              force3D:       true,
-            });
-          },
-        });
-      });
-    },
-    { scope: containerRef, dependencies: [isVisible, isMobile] }
-  );
 
   // ═══════════════════════════════════════════════════════════════════════════
   // MOBILE RENDER — static layout, no GSAP scroll animation

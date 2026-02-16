@@ -89,8 +89,9 @@ export default function RoadmapJourney() {
             gsap.set('.milestone-text-content', { opacity: 0.35 });
             gsap.set('#label-1 .milestone-text-content', { opacity: 1 });
 
-            const scrollDuration = isTablet ? '2000%' : '2500%';
-            const scrubValue = isTablet ? 1.5 : 2;
+            // Reduce scroll duration slightly to make swipes feel more responsive
+            const scrollDuration = isTablet ? '1500%' : '1800%';
+            const scrubValue = 1; // Tighter scrub for better snap feel
             const baseDuration = isTablet ? 18 : 25;
             const pathDuration = isTablet ? 25 : 35;
 
@@ -105,8 +106,18 @@ export default function RoadmapJourney() {
                 fastScrollEnd: true,
                 preventOverlaps: true,
                 invalidateOnRefresh: true,
+                // --- SNAP CONFIGURATION ---
+                snap: {
+                  snapTo: "labels", // Snaps to the closest label defined in the timeline
+                  duration: { min: 0.3, max: 0.8 }, // Animation duration for the snap
+                  delay: 0.1, // Wait 0.1s after scrolling stops before snapping
+                  ease: "power2.inOut", // Smooth ease into the slot
+                }
               },
             });
+
+            // Add start label
+            tl.addLabel("start");
 
             // ACT 1: CONVERGENCE
             tl.to(['#path-fork-top', '#path-fork-bottom'], { strokeDashoffset: 0, duration: baseDuration, ease: 'none' }, 0)
@@ -116,6 +127,9 @@ export default function RoadmapJourney() {
                 ease: 'power1.inOut',
               }, 0)
               .to('#dot-y-join', { opacity: 1, scale: 1, duration: 0.5, ease: 'power2.out' }, baseDuration - 1);
+            
+            // SNAP POINT 1
+            tl.addLabel("stage-1");
 
             const animateText = (selector: string, position: string | number) => {
               if (selector === '#label-1') return;
@@ -139,6 +153,9 @@ export default function RoadmapJourney() {
               }, '<')
               .to('#dot-p1', { opacity: 1, scale: 1, duration: 0.5, ease: 'power2.out' }, '>-0.5');
             animateText('#label-2', '>');
+            
+            // SNAP POINT 2
+            tl.addLabel("stage-2");
 
             // P2 - 03 Translate
             tl.to(mainPath, { strokeDashoffset: mainLen * 0.68, duration: pathDuration, ease: 'none' })
@@ -150,6 +167,9 @@ export default function RoadmapJourney() {
               .to('#dot-p2', { opacity: 1, scale: 1, duration: 0.5, ease: 'power2.out' }, '>-0.5');
             animateText('#label-3', '>');
 
+            // SNAP POINT 3
+            tl.addLabel("stage-3");
+
             // P3 - 04 Build
             tl.to(mainPath, { strokeDashoffset: mainLen * 0.55, duration: pathDuration, ease: 'none' })
               .to(svgRef.current, {
@@ -159,6 +179,9 @@ export default function RoadmapJourney() {
               }, '<')
               .to('#dot-p3', { opacity: 1, scale: 1, duration: 0.5, ease: 'power2.out' }, '>-0.5');
             animateText('#label-4', '>');
+
+            // SNAP POINT 4
+            tl.addLabel("stage-4");
 
             // P4 - 05 Validate
             tl.to(mainPath, { strokeDashoffset: mainLen * 0.29, duration: pathDuration, ease: 'none' })
@@ -170,6 +193,9 @@ export default function RoadmapJourney() {
               .to('#dot-p4', { opacity: 1, scale: 1, duration: 0.5, ease: 'power2.out' }, '>-0.5');
             animateText('#label-5', '>');
 
+            // SNAP POINT 5
+            tl.addLabel("stage-5");
+
             // P5 - 06 Scale
             tl.to(mainPath, { strokeDashoffset: 0, duration: pathDuration, ease: 'none' })
               .to(svgRef.current, {
@@ -179,6 +205,9 @@ export default function RoadmapJourney() {
               }, '<')
               .to('#dot-p5', { opacity: 1, scale: 1, duration: 0.5, ease: 'power2.out' }, '>-0.5');
             animateText('#label-6', '>');
+
+            // SNAP POINT 6
+            tl.addLabel("stage-6");
 
             // ACT 3: THE GAP
             const gapDuration = isTablet ? 25 : 30;
@@ -192,6 +221,9 @@ export default function RoadmapJourney() {
             // ACT 4: IDEA
             tl.to('#dot-idea', { opacity: 1, scale: 1, duration: 0.8, ease: 'power2.out' });
             animateText('#label-idea', '>');
+            
+            // SNAP POINT 7 (The Idea)
+            tl.addLabel("stage-idea");
 
             // ACT 5: FINAL LANDING
             tl.to('#path-final', { strokeDashoffset: 0, duration: pathDuration, ease: 'none' })
@@ -202,14 +234,16 @@ export default function RoadmapJourney() {
               }, '<')
               .to('#dot-final', { opacity: 1, scale: 1, duration: 0.5, ease: 'power2.out' }, '>-0.5');
             animateText('#label-final', '>');
-          } else {
-            // MOBILE: Static
-            gsap.set(['#dot-top', '#dot-bottom', '.milestone-node'], { opacity: 1, scale: 1 });
 
+            // SNAP POINT FINAL
+            tl.addLabel("stage-final");
+
+          } else {
+            // MOBILE: Static (unchanged)
+            gsap.set(['#dot-top', '#dot-bottom', '.milestone-node'], { opacity: 1, scale: 1 });
             const paths = ['#path-fork-top', '#path-fork-bottom', '#path-main', '#path-final']
               .map((id) => document.querySelector<SVGPathElement>(id))
               .filter((p): p is SVGPathElement => p !== null);
-
             paths.forEach((p) => gsap.set(p, { strokeDashoffset: 0 }));
             gsap.set('.milestone-text-content', { opacity: 1 });
           }
@@ -305,7 +339,7 @@ export default function RoadmapJourney() {
               02 - Architect
             </div>
             <div className="milestone-text-content text-white/80 text-[11px] font-light leading-relaxed max-w-[240px]">
-              We define structure — from information architecture to technical foundations.
+              We define structure - from information architecture to technical foundations.
             </div>
           </div>
         </foreignObject>
@@ -327,7 +361,7 @@ export default function RoadmapJourney() {
               04 - Build
             </div>
             <div className="milestone-text-content text-white/80 text-[11px] font-light leading-relaxed max-w-[240px] ml-auto">
-              Design and development move together — never in isolation.
+              Design and development move together - never in isolation.
             </div>
           </div>
         </foreignObject>
@@ -356,7 +390,7 @@ export default function RoadmapJourney() {
 
         <foreignObject id="label-gap-text" x="100" y="1820" width="380" height="140" className="milestone-text">
           <div className="milestone-text-content text-white/40 text-[9px] text-center leading-relaxed uppercase tracking-[0.25em] px-4">
-            Every system reaches this point — the gap between execution and breakthrough.
+            Every system reaches this point - the gap between execution and breakthrough.
           </div>
         </foreignObject>
 
@@ -366,16 +400,16 @@ export default function RoadmapJourney() {
           </div>
         </foreignObject>
 
-        <foreignObject id="label-final" x="340" y="2200" width="360" height="160" className="milestone-text">
-          <div className="flex items-center justify-center h-full w-full">
-            <a
-              href="/digitalization"
-              className="group relative inline-flex items-center justify-center px-12 py-5 bg-white text-black border-2 border-white rounded-full overflow-hidden transition-all duration-300 hover:bg-black hover:text-white hover:scale-105 pointer-events-auto"
-            >
-              <span className="relative z-10 font-bold text-lg tracking-[0.25em] uppercase">Inversification</span>
-            </a>
-          </div>
-        </foreignObject>
+<foreignObject id="label-final" x="340" y="2150" width="360" height="160" className="milestone-text">
+  <div className="flex items-center justify-center h-full w-full">
+    <a
+      href="/digitalization"
+      className="group relative inline-flex items-center justify-center px-8 py-3 bg-white/95 text-black border border-white/20 rounded-full overflow-hidden transition-all duration-300 hover:bg-black hover:text-white hover:border-white hover:scale-110 pointer-events-auto shadow-lg shadow-white/10 backdrop-blur-sm"
+    >
+      <span className="relative z-10 font-semibold text-sm tracking-[0.15em] uppercase">Inversification</span>
+    </a>
+  </div>
+</foreignObject>
       </svg>
 
       {/* MOBILE LAYOUT */}
