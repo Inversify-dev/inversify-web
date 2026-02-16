@@ -1,31 +1,8 @@
-# robots.txt — Inversify Web Development Agency
-# https://inversify.lk
-
-# ── Default: allow all crawlers ───────────────────────────────────────────────
 User-agent: *
 Allow: /
+
 Disallow: /admin/
 Disallow: /api/
-Disallow: /_next/
-Disallow: /private/
-Crawl-delay: 1
-
-# ── Google: no crawl delay needed ─────────────────────────────────────────────
-User-agent: Googlebot
-Allow: /
-Disallow: /admin/
-Disallow: /api/
-Disallow: /_next/
 Disallow: /private/
 
-# ── Bing ──────────────────────────────────────────────────────────────────────
-User-agent: Bingbot
-Allow: /
-Disallow: /admin/
-Disallow: /api/
-Disallow: /_next/
-Disallow: /private/
-Crawl-delay: 1
-
-# ── Sitemap location ──────────────────────────────────────────────────────────
 Sitemap: https://inversify.lk/sitemap.xml
