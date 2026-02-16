@@ -417,9 +417,9 @@ export default function RoadmapJourney() {
         <div className="max-w-md mx-auto space-y-20">
           {[
             { num: '01', title: 'Understand', desc: 'We study your business, audience, and direction.' },
-            { num: '02', title: 'Architect', desc: 'We define structure — from information architecture to technical foundations.' },
+            { num: '02', title: 'Architect', desc: 'We define structure - from information architecture to technical foundations.' },
             { num: '03', title: 'Translate', desc: 'Strategy becomes concept. Concept becomes system.' },
-            { num: '04', title: 'Build', desc: 'Design and development move together — never in isolation.' },
+            { num: '04', title: 'Build', desc: 'Design and development move together - never in isolation.' },
             { num: '05', title: 'Validate', desc: 'Performance, usability, and scalability are tested and refined.' },
             { num: '06', title: 'Scale', desc: 'The system expands without losing coherence.' },
           ].map(({ num, title, desc }) => (
@@ -429,7 +429,7 @@ export default function RoadmapJourney() {
                 <div className="h-[1px] flex-1 bg-gradient-to-r from-white/40 to-transparent" />
               </div>
               <h3 className="text-white text-2xl font-bold tracking-tight uppercase">
-                {num} — {title}
+                {num} - {title}
               </h3>
               <p className="text-white/70 text-sm leading-relaxed">{desc}</p>
             </div>
