@@ -13,7 +13,7 @@ if (typeof window !== "undefined") {
 }
 
 // ⚠️ REPLACE THIS WITH YOUR GOOGLE APPS SCRIPT URL
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1wbBD_xqiRN9bWOKohqnAQSIUKFDBnnT-lS2RGQqJP--QjnDu_Nw1LpmXPx1_xBQg/exec";
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxzdC0o7AHRqluoUM8DAmoCKH-wRh-8WHkQhdf2P1TbER9jSCG_lQ21HWaWxjhXiTdi/exec";
 
 export default function ContactPage() {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -337,13 +337,13 @@ export default function ContactPage() {
 
             <div className="space-y-6 text-base sm:text-lg font-medium text-gray-100">
               <a
-                href="mailto:hello.inversify@gmail.com"
+                href="mailto:invert@inversify.lk"
                 className="flex items-center gap-4 hover:text-purple-300 transition-colors cursor-pointer group/item"
               >
                 <div className="p-3 bg-purple-500/10 rounded-2xl group-hover/item:bg-purple-500/20 transition-colors">
                   <Mail size={20} className="text-purple-400" />
                 </div>
-                <span className="break-all">hello.inversify@gmail.com</span>
+                <span className="break-all">invert@inversify.lk</span>
               </a>
 
               <a

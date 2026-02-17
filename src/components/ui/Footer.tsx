@@ -76,10 +76,10 @@ const socialLinks = [
 
             <div className="flex flex-col gap-3 mt-2">
               <a 
-                href="mailto:hello.inversify@gmail.com" 
+                href="mailto:invert@inversify.lk" 
                 className="group flex items-center gap-2 text-base text-gray-300 hover:text-white transition-all duration-300 w-fit"
               >
-                <span className="group-hover:text-purple-400 transition-colors">hello.inversify@gmail.com</span>
+                <span className="group-hover:text-purple-400 transition-colors">invert@inversify.lk</span>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-purple-400"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
               </a>
               <a 

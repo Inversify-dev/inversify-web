@@ -107,7 +107,7 @@ export const metadata: Metadata = {
         alt: "Inversify - Web Development Excellence",
       },
     ],
-    emails: ["hello.inversify@gmail.com"],
+    emails: ["invert@inversify.lk"],
     phoneNumbers: ["+94704621228"],
     countryName: "Sri Lanka",
   },
@@ -218,7 +218,7 @@ export default function RootLayout({
               },
               image: "https://inversify.lk/images/logo-icon.png",
               description: "Premium web development and e-commerce solutions in Sri Lanka",
-              email: "hello.inversify@gmail.com",
+              email: "invert@inversify.lk",
               telephone: "+94704621228",
               address: {
                 "@type": "PostalAddress",
@@ -253,7 +253,7 @@ export default function RootLayout({
               image: "https://inversify.lk/images/logo-icon.png",
               url: "https://inversify.lk",
               telephone: "+94704621228",
-              email: "hello.inversify@gmail.com",
+              email: "invert@inversify.lk",
               address: {
                 "@type": "PostalAddress",
                 streetAddress: "",
